@@ -8,7 +8,7 @@ function main()
 
 	if( args.length == 0 )
 	{
-		args = ["analysis.js"];
+		args = ["index.js"];
 	}
 	var filePath = args[0];
 	
