@@ -56,7 +56,7 @@ for( var line of file.split(/\n/g) )
 }
 ```
 
-While we can detect one message chain no problem, we miss one, and falsely detect another.
+While we can detect one message chain, we miss one, and falsely detect another.
 
 The short answer is that any implementation of a static analysis that results in *both* high false positives and high false negatives is going to incite an angry mob of programmers, who will insist the tool be removed from the CI pipeline.
 
