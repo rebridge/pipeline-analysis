@@ -27,8 +27,7 @@ For the same reason [why parsing html with regex is problematic](https://stackov
 > will ins​tantly transport a programmer's consciousness into a world of ceaseless screaming, he comes, the pestilent slithy regex-infection wil​l devour your HT​ML parser, application and existence for all time like Visual Basic only worse he comes he comes do not fi​ght he com̡e̶s, ̕h̵i​s un̨ho͞ly radiańcé destro҉ying all enli̍̈́̂̈́ghtenment, HTML tags lea͠ki̧n͘g fr̶ǫm ̡yo​͟ur eye͢s̸ ̛l̕ik͏e liq​uid pain, the song of re̸gular exp​ression parsing will exti​nguish the voices of mor​tal man from the sp​here I can see it can you see ̲͚̖͔̙î̩́t̲͎̩̱͔́̋̀ it is beautiful t​he final snuffing of the lie​s of Man ALL IS LOŚ͖̩͇̗̪̏̈́T ALL I​S LOST the pon̷y he comes he c̶̮omes he comes the ich​or permeates all MY FACE MY FACE ᵒh god no NO NOO̼O​O NΘ stop the an​*̶͑̾̾​̅ͫ͏̙̤g͇̫͛͆̾ͫ̑͆l͖͉̗̩̳̟̍ͫͥͨe̠̅s ͎a̧͈͖r̽̾̈́͒͑e n​ot rè̑ͧ̌aͨl̘̝̙̃ͤ͂̾̆ ZA̡͊͠͝LGΌ ISͮ̂҉̯͈͕̹̘̱ TO͇̹̺ͅƝ̴ȳ̳ TH̘Ë͖́̉ ͠P̯͍̭O̚​N̐Y̡ H̸̡̪̯ͨ͊̽̅̾̎Ȩ̬̩̾͛ͪ̈́̀́͘ ̶̧̨̱̹̭̯ͧ̾ͬC̷̙̲̝͖ͭ̏ͥͮ͟Oͮ͏̮̪̝͍M̲̖͊̒ͪͩͬ̚̚͜Ȇ̴̟̟͙̞ͩ͌͝S̨̥̫͎̭ͯ̿̔̀ͅ
 
 
-For example, what if we just simply used a regex to detect message chains in code?
-Here is a simple example that illustrates where things could go wrong.
+For example, what if we just simply used a regex to detect [message chains](https://relishapp.com/rspec/rspec-mocks/docs/working-with-legacy-code/message-chains) in code? Here is a simple example that illustrates where things could go wrong.
 
 ```js | {type: 'script'}
 let file = `
@@ -62,11 +61,24 @@ The short answer is that any implementation of a static analysis that results in
 
 We need a technique that is more sound, more precise, and frankly often easier to implement than a basket of regex. See [A Few Billion Lines of Code Later: Using Static Analysis to Find Bugs in the Real World](https://cacm.acm.org/magazines/2010/2/69354-a-few-billion-lines-of-code-later/fulltext)
 
-##### Video
+### Parsing
+
+```js | {type: 'script'}
+const esprima = require('esprima');
+let ast = esprima.parse('var a = 6 * 7;');
+console.log( ast );
+```
+
+Instead of treating code as a string of characters, by using a lexer and parser, we will turn those characters into tokens, and organize those tokens into a representation called an abstract syntax tree.
+
+While is possible to [write a lexer and parser by-hand](https://github.com/CSC-DevOps/Parsing/blob/master/main.js), we can take advantage of a well-built parser for javascript, called [esprima](https://esprima.org/).
+
 If you have not already watched this video, you can get more background about Esprima here:
 Watch [5:00-14:30,28:00-34:00](https://www.youtube.com/watch?v=ACYZFkvq0Sk).
 
-##### Interactive AST
+### Interactive AST
+
+We will be inspecting some simple code, and understanding its corresponding AST.
 
 <iframe id="serviceFrameSend" src="http://esprima.org/demo/parse.html?code=function%20functionName(%20node%20)%0A%7B%0A%09if(%20node.id%20)%0A%09%7B%0A%09%09return%20node.id.name%3B%0A%09%7D%0A%09return%20%22anon%20function%20%40%22%20%2B%20node.loc.start.line%3B%0A%7D" width="800" height="600"  frameborder="1"></iframe>
 
@@ -74,11 +86,30 @@ If you want to play with esprima in another browser tab, check out: http://espri
 
 ## Code Walkthrough
 
-Two design patterns are of importance here:
-* A [Builder pattern](https://en.wikipedia.org/wiki/Builder_pattern), which is used to build up state and then finally emit.
-* A [Visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern), which is used to abstract the process of visiting a data structure such as abstract syntax tree (AST). The only input you have to provide is what action to perform at each node.
+We will explore the template code used for performing our static analysis.
+
+### Design Patterns 
+
+While ASTs are powerful representations, without any tools, reasoning over ASTs can be unwieldly. Two design patterns are of importance here:
+
+* A [Visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern), which is used to abstract the process of visiting a data structure such as our abstract syntax tree (AST).
+
+* A [Builder pattern](https://en.wikipedia.org/wiki/Builder_pattern), which is used to build up state and then finally emit. Meaning, we can incrementally calculate results as with process the AST.
 
 
+### AST Visitor
+
+```js
+function printFunctionNames() {
+	traverseWithParents(ast, function (node) 
+	{
+		if (node.type === 'FunctionDeclaration') 
+		{
+			console.log( `Function: ${functionName(node)} at line ${node.loc.start.line}` );
+		}
+	});
+}
+```
 
 ## Workshop
 
