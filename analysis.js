@@ -14,8 +14,11 @@ function main()
 	}
 	var filePath = args[0];
 
+	console.log( "Parsing ast and running static analysis...");
 	var builders = {};
 	complexity(filePath, builders);
+	console.log( "Complete.");
+
 
 	// Report
 	for( var node in builders )
@@ -82,7 +85,7 @@ class FunctionBuilder
 	// The number of lines.
 	Length = 0;
 	// Number of if statements/loops + 1
-	SimpleCyclomaticComplexity = 0;
+	SimpleCyclomaticComplexity = 11;
 	// Number of unique symbols + operators
 	Halstead = 0;
 	// The max depth of scopes (nested ifs, loops, etc)
@@ -92,28 +95,33 @@ class FunctionBuilder
 
 	threshold() {
 
-		const thresholds = {
-			SimpleCyclomaticComplexity: [{t: 4, color: 'yellow'},{t: 10, color: 'red'}],
-			Halstead: [{t: 3, color: 'yellow'},{t: 10, color: 'red'}],
-			ParameterCount: [{t: 3, color: 'yellow'}, {t: 10, color: 'red'}],
-			Length: [{t: 10, color: 'yellow'}, {t: 100, color: 'red'}]
-		}
+        const thresholds = {
+            SimpleCyclomaticComplexity: [{t: 10, color: 'red'}, {t: 4, color: 'yellow'}],
+            Halstead: [{t: 10, color: 'red'}, {t: 3, color: 'yellow'}],
+            ParameterCount: [{t: 10, color: 'red'}, {t: 3, color: 'yellow'}],
+            Length: [{t: 100, color: 'red'}, {t: 10, color: 'yellow'} ]
+        }
 
-		const getScore = (progress) => scores.sort((a, b) => b.t - a.t).find(score => score.t <= progress);
+        const showScore = (id, value) => {
+            let scores = thresholds[id];
+            const lowestThreshold = {t: 0, color: 'green'};
+            const score = scores.sort( (a,b) => {a.t - b.t}).find(score => score.t <= value) || lowestThreshold;
+            return score.color;
+        };
 
-		const showScore = (id, value) => {
-			let scores = thresholds[id];
-			const lowestThreshold = scores[0];
-			const score = getScore(progress) || lowestThreshold;
-			console.log(`${progress} returns`, score.id);
-		};
-			}
+        this.Halstead = chalk`{${showScore('Halstead', this.Halstead)} ${this.Halstead}}`;
+        this.Length = chalk`{${showScore('Length', this.Length)} ${this.Length}}`;
+        this.ParameterCount = chalk`{${showScore('ParameterCount', this.ParameterCount)} ${this.ParameterCount}}`;
+        this.SimpleCyclomaticComplexity = chalk`{${showScore('SimpleCyclomaticComplexity', this.SimpleCyclomaticComplexity)} ${this.SimpleCyclomaticComplexity}}`;
+
+	}
 
 	report()
 	{
+		this.threshold();
 
 		console.log(
-chalk`{green.underline ${this.FunctionName}}(): at line #${this.StartLine}
+chalk`{blue.underline ${this.FunctionName}}(): at line #${this.StartLine}
 Parameters: ${this.ParameterCount}\tLength: ${this.Length}
 Cyclomatic: ${this.SimpleCyclomaticComplexity}\tHalstead: ${this.Halstead}
 MaxDepth: ${this.MaxNestingDepth}\tMaxConditions: ${this.MaxConditions}\n`
@@ -133,7 +141,7 @@ function FileBuilder()
 	this.report = function()
 	{
 		console.log (
-			chalk`{blue.underline ${this.FileName}}
+			chalk`{magenta.underline ${this.FileName}}
 Packages: ${this.ImportCount}
 Strings ${this.Strings}
 `);

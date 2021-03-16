@@ -116,6 +116,26 @@ function printFunctionLengths(ast) {
 }
 ```
 
+```js | {type: 'script'}
+
+		const thresholds = {
+			SimpleCyclomaticComplexity: [{t: 4, color: 'yellow'},{t: 10, color: 'red'}],
+			Halstead: [{t: 3, color: 'yellow'},{t: 10, color: 'red'}],
+			ParameterCount: [{t: 3, color: 'yellow'}, {t: 10, color: 'red'}],
+			Length: [{t: 10, color: 'yellow'}, {t: 100, color: 'red'}]
+		}
+
+		const getScore = (progress) => scores.find(score => score.t <= progress);
+
+		const showScore = (id, value) => {
+			let scores = thresholds[id];
+			const lowestThreshold = scores[0];
+			const score = getScore(value) || lowestThreshold;
+			console.log(`${value} returns`, score.color);
+		};
+
+```
+
 This results in suprisingly powerful and compact code.
 
 ### Builder
