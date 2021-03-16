@@ -204,12 +204,15 @@ console.log( JSON.stringify(ast, null, 3) );
      - Stop when reaching the top of FunctionDeclaration.
      - Keep the max depth.
 
+``` | {type: 'terminal'}
+```
+
 Given the following function:
 
 ```js
 function demo(a,b,c) {
    if( c && b ) { c = b * b; }
-   if( a )
+   else if( a )
    {
       if( b )
       {
