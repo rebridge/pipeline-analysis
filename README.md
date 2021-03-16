@@ -230,6 +230,6 @@ function demo(a,b,c) {
 
 The expected results include:
 
-| Method Length | Parameters | MaxConditions | MaxNesting | Halstead | CyclomaticComplexity | 
+| Method Length | Parameters | MaxConditions | MaxNesting | Halstead Complexity | Cyclomatic Complexity | 
 | ------------- | ---------- | ------------  | -----------| -------- | ------------------   |
-| 19            |  3         | 3             | 3          | 5 + 4    | 5 + 1                |
+| 19            |  3         | 3             | 3          | 9 (5 identifiers + 4 binaryexpressions )| 6 (5 decisions + 1)  |
