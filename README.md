@@ -99,17 +99,28 @@ While ASTs are powerful representations, without any tools, reasoning over ASTs 
 
 ### AST Visitor
 
-```js
-function printFunctionNames() {
-	traverseWithParents(ast, function (node) 
-	{
+Imagine you wanted to write a simple script that could detect whether a method exceeded a certain number of lines. Trying to process and handle all the different tokens and tree structures of code would quickly get complex.
+
+This is where the visitor pattern comes in. The function `traverseWithParents(ast, function)` is implementing a vistor pattern for the AST. What it will essentially do, is visit each node inside the AST, and repeatly callback the given function with each node of the tree. What this enables in short is a way for us to pay attention or selectively "visit" nodes of interest, while ignoring the others and without any knowledge of traversal.
+
+```js | {type: 'info', range: {start: 1, end: 2}}
+function printFunctionLengths(ast) {
+
+	traverseWithParents(ast, function (node)  {
 		if (node.type === 'FunctionDeclaration') 
 		{
-			console.log( `Function: ${functionName(node)} at line ${node.loc.start.line}` );
+         let length = node.loc.end.line - node.loc.start.line;
+			console.log( `Function: ${functionName(node)} with ${length} lines` );
 		}
 	});
 }
 ```
+
+This results in suprisingly powerful and compact code.
+
+### Builder
+
+To collect....
 
 ## Workshop
 
