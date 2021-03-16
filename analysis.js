@@ -8,11 +8,13 @@ function main()
 
 	if( args.length == 0 )
 	{
-		args = ["index.js"];
+		// default value is self if no other script is provided.
+		args = [__filename];
 	}
 	var filePath = args[0];
-	
-	complexity(filePath);
+
+	var builders = {};
+	complexity(filePath, builders);
 
 	// Report
 	for( var node in builders )
@@ -24,8 +26,42 @@ function main()
 }
 
 
+function complexity(filePath, builders)
+{
+	var buf = fs.readFileSync(filePath, "utf8");
+	var ast = esprima.parse(buf, options);
 
-var builders = {};
+	var i = 0;
+
+	// Initialize builder for file-level information
+	var fileBuilder = new FileBuilder();
+	fileBuilder.FileName = filePath;
+
+
+	// Tranverse program with a function visitor.
+	traverseWithParents(ast, function (node) 
+	{
+		// File level calculations
+		// 1. Strings
+		// 2. 
+
+		if (node.type === 'FunctionDeclaration') 
+		{
+			var builder = new FunctionBuilder();
+
+			builder.FunctionName = functionName(node);
+			builder.StartLine    = node.loc.start.line;
+			// 3. Calculate function level properties.
+
+			builders[builder.FunctionName] = builder;
+		}
+
+	});
+
+	builders[filePath] = fileBuilder;
+}
+
+
 
 // Represent a reusable "class" following the Builder pattern.
 function FunctionBuilder()
@@ -99,36 +135,6 @@ function traverseWithParents(object, visitor)
     }
 }
 
-function complexity(filePath)
-{
-	var buf = fs.readFileSync(filePath, "utf8");
-	var ast = esprima.parse(buf, options);
-
-	var i = 0;
-
-	// A file level-builder:
-	var fileBuilder = new FileBuilder();
-	fileBuilder.FileName = filePath;
-	fileBuilder.ImportCount = 0;
-	builders[filePath] = fileBuilder;
-
-	// Tranverse program with a function visitor.
-	traverseWithParents(ast, function (node) 
-	{
-		if (node.type === 'FunctionDeclaration') 
-		{
-			var builder = new FunctionBuilder();
-
-			builder.FunctionName = functionName(node);
-			builder.StartLine    = node.loc.start.line;
-
-			builders[builder.FunctionName] = builder;
-		}
-
-	});
-
-}
-
 // Helper function for counting children of node.
 function childrenLength(node)
 {
@@ -184,6 +190,26 @@ if (!String.prototype.format) {
 }
 
 main();
+
+function demo(a,b,c) {
+	if( c && b ) { c = b * b; }
+	if( a )
+	{
+	   if( b )
+	   {
+		  if( c )
+		  {
+			 console.log( a + b + c );
+		  }
+	   }
+	}
+ 
+	if( a || b || c )
+	{
+	   return 0;
+	}
+	return 1;
+ }
 
 function Crazy (argument) 
 {

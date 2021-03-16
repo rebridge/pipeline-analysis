@@ -66,7 +66,7 @@ We need a technique that is more sound, more precise, and frankly often easier t
 ```js | {type: 'script'}
 const esprima = require('esprima');
 let ast = esprima.parse('var a = 6 * 7;');
-console.log( ast );
+console.log( JSON.stringify(ast, null, 3) );
 ```
 
 Instead of treating code as a string of characters, by using a lexer and parser, we will turn those characters into tokens, and organize those tokens into a representation called an abstract syntax tree.
@@ -106,13 +106,13 @@ This is where the visitor pattern comes in. The function `traverseWithParents(as
 ```js | {type: 'info', range: {start: 1, end: 2}}
 function printFunctionLengths(ast) {
 
-	traverseWithParents(ast, function (node)  {
-		if (node.type === 'FunctionDeclaration') 
-		{
+   traverseWithParents(ast, function (node)  {
+      if (node.type === 'FunctionDeclaration') 
+      {
          let length = node.loc.end.line - node.loc.start.line;
-			console.log( `Function: ${functionName(node)} with ${length} lines` );
-		}
-	});
+         console.log( `Function: ${functionName(node)} with ${length} lines` );
+      }
+   });
 }
 ```
 
@@ -120,33 +120,116 @@ This results in suprisingly powerful and compact code.
 
 ### Builder
 
-To collect....
+As we're collecting information incrementally as we visit AST nodes, we need a way to store these partial results, before making a final analysis decision.
+
+```js
+// A builder for storing file level information.
+function FileBuilder()
+{
+	this.FileName = "";
+	// Number of strings in a file.
+	this.Strings = 0;
+	// Number of imports in a file.
+	this.ImportCount = 0;
+
+	this.report = function()
+	{
+		console.log (
+			( "{0}\n" +
+			  "~~~~~~~~~~~~\n"+
+			  "ImportCount {1}\t" +
+			  "Strings {2}\n"
+			).format( this.FileName, this.ImportCount, this.Strings ));
+	}
+}
+```
 
 ## Workshop
 
-The repository contains a stub that parses a javascript file and visits each function. 
+For the workshop, we will extend the analysis code to compute and validate several properties of the code.
+Let's first see what the code runs by default:
 
-1. Run the program and print all the tokens in an ast.
-   ```
-      npm install
-      node analysis.js
-   ```
-
-2. Do a simple calculation
-
-   * **PackageComplexity**: The number of imports used in the file.
-   * **StringCount**: The number of strings used in the file.
-   * **ParameterCount**: The number of parameters for functions
+``` bash | {type: 'command'}
+node analysis.js
+```
 
 
-3. Using multiple visitors.
+### File Properties
 
-   * **SimpleCyclomaticComplexity**: The number of if statements/loops + 1. For live example of a code complexity calculator, see [jscomplexity](http://jscomplexity.org/).
+1. We will start off with calculations a few simple properties of code.
 
-4. Advanced.
+   * **StringCount:** The number of string literals in the entire code file.  
+     *Note:* That esprima does not use different tokens for integers and strings, you'll have to use a construct, like `typeof`, to accurately count the number of strings.
+
+   * **PackageComplexity:** The number of imports used in the file.  
+     *Note:* There is no _require_ token&mdash;you will have to find another way.
+
+To help visualize the AST structure and identify relevant node types for your code, you use the interactive AST component above, or your can type in a quick expression and run the following script:
+
+```js | {type: 'script'}
+const esprima = require('esprima');
+let ast = esprima.parse(`var dye = "yellow #";
+var num = 5;
+console.log("Message:" + dye + num);
+`);
+console.log( JSON.stringify(ast, null, 3) );
+```
+
+### Function Properties
+
+2. We will extend our work to calculate additional properties of functions.
+
+   * **ParameterCount**: The number of parameters in a function.
+   * **MethodLength**: The number of lines in a function.
+
+### Complexity Metrics
+
+3. We will be calculating two well-known measures of code complexity. What's interesting, is that this will require using multiple visitors!
+
+   * **SimpleCyclomaticComplexity**: The number of decision statements + 1.  
+     _Note:_ You can use the helper method `isDecision(node)`, to check if a node is a if statement, loop, etc.).
+   * **SimpleHalstead**: The number of unique symbols and operators in a function.
+     _Note:_ For the purposes of the workshop, you can simply count the number of unique `Identifier` and `BinaryExpression` nodes in a function.
+
+### Advanced Metrics
+
+4. We will be calculating more advanced properties of code (This is optional for workshop, but will be useful for milestone).
 
    * **MaxConditions**: The max number of conditions (boolean predicates inside decision node) in one if statement.
-   * **MaxNestingDepth**: The max depth of scopes (nested ifs, loops, etc) -- this one is hard, only expect a few to get to do finish this one.
+   * **MaxNestingDepth**: The max depth of scopes (nested ifs, loops, etc).  
+     Note: The suggested strategy is to:
+     - Visit nodes until reaching a leaf node: `childrenLength(node) == 0`.
+     - Tranverse up the tree from the leaf using `node.parent`.
+     - Count the number of parents that are decision nodes.
+     - Stop when reaching the top of FunctionDeclaration.
+     - Keep the max depth.
 
+Given the following function:
 
+```js
+function demo(a,b,c) {
+   if( c && b ) { c = b * b; }
+   if( a )
+   {
+      if( b )
+      {
+         if( c )
+         {
+            console.log( a + b + c );
+         }
+      }
+   }
 
+   if( a || b || c )
+   {
+      return 0;
+   }
+   return 1;
+}
+```
+
+The expected results include:
+
+| Method Length | Parameters | MaxConditions | MaxNesting | Halstead | CyclomaticComplexity | 
+| ------------- | ---------- | ------------  | -----------| -------- | ------------------   |
+| 19            |  3         | 3             | 3          | 5 + 4    | 5 + 1                |
