@@ -85,7 +85,7 @@ class FunctionBuilder
 	// The number of lines.
 	Length = 0;
 	// Number of if statements/loops + 1
-	SimpleCyclomaticComplexity = 11;
+	SimpleCyclomaticComplexity = 0;
 	// Number of unique symbols + operators
 	Halstead = 0;
 	// The max depth of scopes (nested ifs, loops, etc)
