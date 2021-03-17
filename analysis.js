@@ -10,7 +10,7 @@ function main()
 	if( args.length == 0 )
 	{
 		// default value is self if no other script is provided.
-		args = [__filename];
+		args = ['analysis.js'];
 	}
 	var filePath = args[0];
 
@@ -48,7 +48,16 @@ function complexity(filePath, builders)
 	{
 		// File level calculations
 		// 1. Strings
+		if( node.type == "Literal" && typeof node.value == "string" )
+		{
+			fileBuilder.Strings++;
+		}
+
 		// 2. Packages
+		if( node.type == "CallExpression" && node.callee.type == "Identifier" && node.callee.name == "require")
+		{
+			fileBuilder.ImportCount++;			
+		}
 
 		if (node.type === 'FunctionDeclaration') 
 		{
@@ -58,12 +67,20 @@ function complexity(filePath, builders)
 			builder.StartLine    = node.loc.start.line;
 			// Calculate function level properties.
 			// 3. Parameters
+			builder.ParameterCount = node.params.length;
 			// 4. Method Length
-
-
+			builder.Length = node.loc.end.line - node.loc.start.line;
 
 			// With new visitor(s)...
 			// 5. CyclomaticComplexity
+			traverseWithParents(node, function (child) 
+			{
+				if( child.type == "IfStatement" )
+				{
+					builder.SimpleCyclomaticComplexity++;				
+				}
+			});
+
 			// 6. Halstead
 
 
@@ -78,20 +95,22 @@ function complexity(filePath, builders)
 // Represent a reusable "class" following the Builder pattern.
 class FunctionBuilder
 {
-	StartLine = 0;
-	FunctionName = "";
-	// The number of parameters for functions
-	ParameterCount  = 0;
-	// The number of lines.
-	Length = 0;
-	// Number of if statements/loops + 1
-	SimpleCyclomaticComplexity = 0;
-	// Number of unique symbols + operators
-	Halstead = 0;
-	// The max depth of scopes (nested ifs, loops, etc)
-	MaxNestingDepth    = 0;
-	// The max number of conditions if one decision statement.
-	MaxConditions      = 0;
+	constructor() {
+		this.StartLine = 0;
+		this.FunctionName = "";
+		// The number of parameters for functions
+		this.ParameterCount  = 0;
+		// The number of lines.
+		this.Length = 0;
+		// Number of if statements/loops + 1
+		this.SimpleCyclomaticComplexity = 1;
+		// Number of unique symbols + operators
+		this.Halstead = 0;
+		// The max depth of scopes (nested ifs, loops, etc)
+		this.MaxNestingDepth    = 0;
+		// The max number of conditions if one decision statement.
+		this.MaxConditions      = 0;
+	}
 
 	threshold() {
 

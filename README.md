@@ -150,7 +150,7 @@ For the workshop, we will extend the analysis code to compute and validate sever
 Let's first see what the code runs by default:
 
 ``` bash | {type: 'command'}
-node analysis.js
+node analysis.js test/code.js
 ```
 
 
@@ -235,4 +235,4 @@ The expected results include:
 
 | Method Length | Parameters | MaxConditions | MaxNesting | Halstead Complexity | Cyclomatic Complexity | 
 | ------------- | ---------- | ------------  | -----------| -------- | ------------------   |
-| 19            |  3         | 3             | 3          | 9 (5 identifiers + 4 binaryexpressions )| 6 (5 decisions + 1)  |
+| 18            |  3         | 3             | 3          | 9 (5 identifiers + 4 binaryexpressions )| 6 (5 decisions + 1)  |
