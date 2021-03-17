@@ -2,6 +2,10 @@
 
 In this workshop, you'll be implementing a simple static analysis for validating basic properties of code.
 
+``` | {type:'youtube'}
+https://www.youtube.com/embed/VqBZT7dmGd0
+```
+
 ## Setup
 
 ### Before you get started
