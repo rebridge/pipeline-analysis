@@ -67,19 +67,11 @@ function complexity(filePath, builders)
 			builder.StartLine    = node.loc.start.line;
 			// Calculate function level properties.
 			// 3. Parameters
-			builder.ParameterCount = node.params.length;
+
 			// 4. Method Length
-			builder.Length = node.loc.end.line - node.loc.start.line;
 
 			// With new visitor(s)...
 			// 5. CyclomaticComplexity
-			traverseWithParents(node, function (child) 
-			{
-				if( child.type == "IfStatement" )
-				{
-					builder.SimpleCyclomaticComplexity++;				
-				}
-			});
 
 			// 6. Halstead
 
