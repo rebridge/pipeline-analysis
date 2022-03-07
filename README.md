@@ -2,21 +2,17 @@
 
 In this workshop, you'll be implementing a simple static analysis for validating basic properties of code.
 
+<!--
 ``` | {type:'youtube'}
 https://www.youtube.com/embed/VqBZT7dmGd0
 ```
+-->
 
 ## Setup
 
 ### Before you get started
 
-Import this as a notebook or clone this repo locally. Also, ensure you [install latest version of docable](https://github.com/ottomatica/docable-notebooks/blob/master/docs/install.md)!
-
-```bash
-docable-server import https://github.com/CSC-DevOps/Complexity
-```
-
-Install dependencies for our code.
+Clone repository and install dependencies for our code.
 
 ```bash | {type: 'command', failed_when: 'exitCode!=0'}
 npm install
